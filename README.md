@@ -1,3 +1,5 @@
+---
+---
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -59,6 +61,10 @@
         display: none !important;
       }
     }
+    /* Oculta elementos do GitHub Pages */
+    .header, .footer, .site-header, .site-footer, .repo-link {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -82,63 +88,43 @@
   <script>
     // Implementação do EAN13
     function generateEAN13(code, skipValidation = false) {
-      // Verifica se o código é válido (12 ou 13 dígitos)
       if (!/^\d{12,13}$/.test(code)) {
         throw new Error(`Código inválido: "${code}" - Deve conter 12 ou 13 dígitos`);
       }
       
-      // Calcula o dígito verificador se necessário
       if (code.length === 12) {
         code = code + calculateChecksum(code);
       } else if (!skipValidation && calculateChecksum(code.substring(0, 12)) != code[12]) {
         throw new Error(`Dígito verificador inválido para código: "${code}"`);
       }
       
-      // Padrões de codificação
       const patterns = {
-        L: ["0001101", "0011001", "0010011", "0111101", "0100011", 
-            "0110001", "0101111", "0111011", "0110111", "0001011"],
-        G: ["0100111", "0110011", "0011011", "0100001", "0011101", 
-            "0111001", "0000101", "0010001", "0001001", "0010111"],
-        R: ["1110010", "1100110", "1101100", "1000010", "1011100", 
-            "1001110", "1010000", "1000100", "1001000", "1110100"]
+        L: ["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"],
+        G: ["0100111","0110011","0011011","0100001","0011101","0111001","0000101","0010001","0001001","0010111"],
+        R: ["1110010","1100110","1101100","1000010","1011100","1001110","1010000","1000100","1001000","1110100"]
       };
       
-      const structure = [
-        "LLLLLL",
-        "LLGLGG",
-        "LLGGLG",
-        "LLGGGL",
-        "LGLLGG",
-        "LGGLLG",
-        "LGGGLL",
-        "LGLGLG",
-        "LGLGGL",
-        "LGGLGL"
-      ];
+      const structure = ["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"];
       
-      // Determina o padrão a ser usado
       const firstDigit = parseInt(code[0]);
       const pattern = structure[firstDigit];
       
-      let barcode = "101"; // Início
+      let barcode = "101";
       
-      // Primeira metade (6 dígitos)
       for (let i = 1; i <= 6; i++) {
         const digit = parseInt(code[i]);
         const patternType = pattern[i-1];
         barcode += patterns[patternType][digit];
       }
       
-      barcode += "01010"; // Centro
+      barcode += "01010";
       
-      // Segunda metade (6 dígitos)
       for (let i = 7; i <= 12; i++) {
         const digit = parseInt(code[i]);
         barcode += patterns["R"][digit];
       }
       
-      barcode += "101"; // Fim
+      barcode += "101";
       
       return {
         code: code,
@@ -161,17 +147,14 @@
       const margin = options.margin || 10;
       const displayValue = options.displayValue !== false;
       
-      // Cria o elemento SVG
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("width", (binary.length * width) + (margin * 2));
       svg.setAttribute("height", height + margin + (displayValue ? 30 : 0));
       svg.classList.add("barcode-svg");
       
-      // Cria um grupo para o código de barras
       const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
       svg.appendChild(group);
       
-      // Desenha as barras
       let x = margin;
       for (let i = 0; i < binary.length; i++) {
         if (binary[i] === '1') {
@@ -186,7 +169,6 @@
         x += width;
       }
       
-      // Adiciona o texto (código) - com classe para controle de impressão
       if (displayValue && options.code) {
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         text.setAttribute("x", (binary.length * width + margin * 2) / 2);
@@ -195,24 +177,19 @@
         text.setAttribute("font-family", "Arial");
         text.setAttribute("font-size", "14");
         text.textContent = options.code;
-        text.classList.add("no-print"); // Não mostrar texto na impressão
+        text.classList.add("no-print");
         group.appendChild(text);
       }
       
-      // Cria o container do item
       const item = document.createElement("div");
       item.className = "barcode-item";
       item.appendChild(svg);
-      
-      // Adiciona ao container principal
       container.appendChild(item);
     }
     
     function gerarTodos() {
       const input = document.getElementById("codigos").value.trim();
       const container = document.getElementById("barcodes");
-      
-      // Limpa os códigos anteriores
       container.innerHTML = '';
       
       if (!input) {
@@ -220,19 +197,14 @@
         return;
       }
       
-      // Divide os códigos por linha
-      const codigos = input.split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0);
-      
+      const codigos = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
       let successCount = 0;
       let errorCount = 0;
       const errorMessages = [];
       
-      // Processa cada código
       codigos.forEach((codigo, index) => {
         try {
-          const barcode = generateEAN13(codigo, true); // Ignora validação
+          const barcode = generateEAN13(codigo, true);
           renderBarcode(barcode.binary, container, {
             width: 2,
             height: 60,
@@ -244,17 +216,14 @@
         } catch (error) {
           errorCount++;
           errorMessages.push(`Linha ${index + 1}: ${error.message}`);
-          
-          // Adiciona uma mensagem de erro no container
           const errorDiv = document.createElement("div");
-          errorDiv.className = "barcode-item no-print"; // Não mostrar erros na impressão
+          errorDiv.className = "barcode-item no-print";
           errorDiv.style.color = "red";
           errorDiv.textContent = `Erro: ${codigo} - ${error.message}`;
           container.appendChild(errorDiv);
         }
       });
       
-      // Mostra um resumo (não aparece na impressão)
       if (errorCount > 0) {
         alert(`Foram gerados ${successCount} códigos com sucesso.\n\nErros encontrados (${errorCount}):\n${errorMessages.join('\n')}`);
       } else if (successCount > 0) {

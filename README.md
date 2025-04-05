@@ -35,7 +35,7 @@
 <body>
   <h1>Gerador de Códigos de Barras</h1>
   <p>Cole os códigos abaixo (um por linha):</p>
-  <textarea id="inputCodes" placeholder="Ex: 1234567890123&#10;9876543210987"></textarea><br>
+  <textarea id="inputCodes" placeholder="Ex: ABC123456&#10;9876543210"></textarea><br>
   <button onclick="gerarCodigos()">Gerar</button>
   <button onclick="window.print()">Imprimir</button>
 
@@ -51,7 +51,7 @@
           const svg = document.createElement('svg');
           svg.classList.add('barcode');
           JsBarcode(svg, code.trim(), {
-            format: "EAN13",
+            format: "CODE128", // Mais flexível que EAN13
             displayValue: true,
             width: 2,
             height: 60

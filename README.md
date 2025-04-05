@@ -40,14 +40,24 @@
       border: 1px solid #ddd;
     }
     @media print {
-      button {
-        display: none;
+      body * {
+        visibility: hidden;
       }
-      .input-area {
-        display: none;
+      .output-area, .output-area * {
+        visibility: visible;
       }
-      .barcode-container {
-        gap: 10px;
+      .output-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .barcode-item {
+        display: inline-block;
+        margin: 10px;
+      }
+      button, .input-area {
+        display: none !important;
       }
     }
   </style>
@@ -66,13 +76,13 @@
   </div>
   
   <div class="output-area">
-    <h2>Códigos Gerados:</h2>
+    <h2 class="no-print">Códigos Gerados:</h2>
     <div id="barcodes" class="barcode-container"></div>
   </div>
 
   <script>
     // Implementação do EAN13
-    function generateEAN13(code) {
+    function generateEAN13(code, skipValidation = false) {
       // Verifica se o código é válido (12 ou 13 dígitos)
       if (!/^\d{12,13}$/.test(code)) {
         throw new Error(`Código inválido: "${code}" - Deve conter 12 ou 13 dígitos`);
@@ -81,7 +91,7 @@
       // Calcula o dígito verificador se necessário
       if (code.length === 12) {
         code = code + calculateChecksum(code);
-      } else if (calculateChecksum(code.substring(0, 12)) != code[12]) {
+      } else if (!skipValidation && calculateChecksum(code.substring(0, 12)) != code[12]) {
         throw new Error(`Dígito verificador inválido para código: "${code}"`);
       }
       
@@ -148,7 +158,7 @@
     
     function renderBarcode(binary, container, options = {}) {
       const width = options.width || 2;
-      const height = options.height || 80;
+      const height = options.height || 60;
       const margin = options.margin || 10;
       const displayValue = options.displayValue !== false;
       
@@ -156,6 +166,7 @@
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("width", (binary.length * width) + (margin * 2));
       svg.setAttribute("height", height + margin + (displayValue ? 30 : 0));
+      svg.classList.add("barcode-svg");
       
       // Cria um grupo para o código de barras
       const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -176,7 +187,7 @@
         x += width;
       }
       
-      // Adiciona o texto (código)
+      // Adiciona o texto (código) - com classe para controle de impressão
       if (displayValue && options.code) {
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         text.setAttribute("x", (binary.length * width + margin * 2) / 2);
@@ -185,6 +196,7 @@
         text.setAttribute("font-family", "Arial");
         text.setAttribute("font-size", "14");
         text.textContent = options.code;
+        text.classList.add("no-print"); // Não mostrar texto na impressão
         group.appendChild(text);
       }
       
@@ -221,7 +233,7 @@
       // Processa cada código
       codigos.forEach((codigo, index) => {
         try {
-          const barcode = generateEAN13(codigo);
+          const barcode = generateEAN13(codigo, true); // Ignora validação
           renderBarcode(barcode.binary, container, {
             width: 2,
             height: 60,
@@ -236,17 +248,17 @@
           
           // Adiciona uma mensagem de erro no container
           const errorDiv = document.createElement("div");
-          errorDiv.className = "barcode-item";
+          errorDiv.className = "barcode-item no-print"; // Não mostrar erros na impressão
           errorDiv.style.color = "red";
           errorDiv.textContent = `Erro: ${codigo} - ${error.message}`;
           container.appendChild(errorDiv);
         }
       });
       
-      // Mostra um resumo
+      // Mostra um resumo (não aparece na impressão)
       if (errorCount > 0) {
         alert(`Foram gerados ${successCount} códigos com sucesso.\n\nErros encontrados (${errorCount}):\n${errorMessages.join('\n')}`);
-      } else {
+      } else if (successCount > 0) {
         alert(`Todos os ${successCount} códigos foram gerados com sucesso!`);
       }
     }

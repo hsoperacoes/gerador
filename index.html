@@ -1,9 +1,8 @@
----
----
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gerador de Códigos de Barras em Lote - EAN13</title>
   <style>
     body {
@@ -11,21 +10,49 @@
       padding: 20px;
       max-width: 800px;
       margin: 0 auto;
+      background-color: #f5f5f5;
     }
     .input-area, .output-area {
       margin-bottom: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     textarea {
       width: 100%;
       height: 150px;
       padding: 10px;
       font-family: monospace;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
     }
     button {
       font-size: 16px;
       padding: 8px 16px;
       margin: 10px 5px 10px 0;
       cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #limpar {
+      background-color: #f44336;
+    }
+    #limpar:hover {
+      background-color: #d32f2f;
+    }
+    #imprimir {
+      background-color: #2196F3;
+    }
+    #imprimir:hover {
+      background-color: #0b7dda;
     }
     .barcode-container {
       display: flex;
@@ -37,9 +64,14 @@
       text-align: center;
       margin-bottom: 20px;
       page-break-inside: avoid;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     svg {
-      border: 1px solid #ddd;
+      border: 1px solid #eee;
+      background: white;
     }
     @media print {
       body * {
@@ -53,18 +85,26 @@
         left: 0;
         top: 0;
         width: 100%;
+        background: none;
+        box-shadow: none;
       }
       .barcode-item {
         display: inline-block;
         margin: 10px;
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
-      button, .input-area {
+      button, .input-area, .no-print {
         display: none !important;
       }
     }
-    /* Oculta elementos do GitHub Pages */
-    .header, .footer, .site-header, .site-footer, .repo-link {
+    /* Garante que nenhum elemento do GitHub apareça */
+    .Header, .header, .footer, .site-header, .site-footer, .repo-link, .Layout {
       display: none !important;
+    }
+    body > .Layout {
+      padding: 0 !important;
+      margin: 0 !important;
     }
   </style>
 </head>
@@ -73,11 +113,11 @@
   
   <div class="input-area">
     <h2>Cole seus códigos (um por linha):</h2>
-    <textarea id="codigos" placeholder="Cole aqui vários códigos EAN13, um por linha\nExemplo:\n789123456789\n789987654321"></textarea>
+    <textarea id="codigos" placeholder="Cole aqui vários códigos EAN13, um por linha&#10;Exemplo:&#10;789123456789&#10;789987654321&#10;123456789012"></textarea>
     <div>
-      <button onclick="gerarTodos()">Gerar Códigos</button>
-      <button onclick="limparTudo()">Limpar Tudo</button>
-      <button onclick="window.print()">Imprimir Códigos</button>
+      <button id="gerar" onclick="gerarTodos()">Gerar Códigos</button>
+      <button id="limpar" onclick="limparTudo()">Limpar Tudo</button>
+      <button id="imprimir" onclick="window.print()">Imprimir Códigos</button>
     </div>
   </div>
   
@@ -237,8 +277,29 @@
       document.getElementById("barcodes").innerHTML = '';
     }
     
-    // Exemplo inicial
-    document.getElementById("codigos").value = "789123456789\n789987654321\n123456789012";
+    // Remove elementos do GitHub após o carregamento
+    document.addEventListener('DOMContentLoaded', function() {
+      // Limpa qualquer cabeçalho residual
+      const unwantedElements = [
+        '.Header', '.header', '.footer', 
+        '.site-header', '.site-footer', '.repo-link',
+        '.Layout', 'header', 'footer'
+      ];
+      
+      unwantedElements.forEach(selector => {
+        document.querySelectorAll(selector).forEach(el => {
+          el.remove();
+        });
+      });
+
+      // Corrige o estilo do body
+      document.body.style.padding = '20px';
+      document.body.style.margin = '0 auto';
+      document.body.style.maxWidth = '800px';
+      
+      // Exemplo inicial
+      document.getElementById("codigos").value = "789123456789\n789987654321\n123456789012";
+    });
   </script>
 </body>
 </html>

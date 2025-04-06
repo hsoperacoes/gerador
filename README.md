@@ -94,8 +94,12 @@
         page-break-inside: avoid;
         break-inside: avoid;
       }
-      button, .input-area, .no-print, text {
+      button, .input-area, .no-print {
         display: none !important;
+      }
+      /* Mostra os números abaixo do código de barras na impressão */
+      text {
+        display: block !important;
       }
     }
     /* Garante que nenhum elemento do GitHub apareça */
@@ -218,7 +222,6 @@
         text.setAttribute("font-family", "Arial");
         text.setAttribute("font-size", "14");
         text.textContent = options.code;
-        text.classList.add("no-print");
         group.appendChild(text);
       }
       
@@ -231,7 +234,13 @@
     function gerarTodos() {
       const input = document.getElementById("codigos").value.trim();
       const container = document.getElementById("barcodes");
+      
+      // Limpa apenas os códigos gerados, mantendo os exemplos
+      const exampleBarcodes = container.querySelectorAll('.example-barcode');
       container.innerHTML = '';
+      exampleBarcodes.forEach(barcode => {
+        container.appendChild(barcode);
+      });
       
       if (!input) {
         alert("Por favor, cole alguns códigos EAN13 no campo de texto.");
@@ -274,7 +283,68 @@
     
     function limparTudo() {
       document.getElementById("codigos").value = '';
-      document.getElementById("barcodes").innerHTML = '';
+      const container = document.getElementById("barcodes");
+      
+      // Remove apenas os códigos gerados, mantendo os exemplos
+      const exampleBarcodes = container.querySelectorAll('.example-barcode');
+      container.innerHTML = '';
+      exampleBarcodes.forEach(barcode => {
+        container.appendChild(barcode);
+      });
+    }
+    
+    // Adiciona exemplos iniciais
+    function adicionarExemplos() {
+      const container = document.getElementById("barcodes");
+      const exemplos = [
+        '7891000315507',
+        '7891910000197',
+        '7891234567890'
+      ];
+      
+      exemplos.forEach(codigo => {
+        try {
+          const barcode = generateEAN13(codigo, true);
+          const item = document.createElement("div");
+          item.className = "barcode-item example-barcode";
+          
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("width", (barcode.binary.length * 2) + 20);
+          svg.setAttribute("height", 90);
+          svg.classList.add("barcode-svg");
+          
+          const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          svg.appendChild(group);
+          
+          let x = 10;
+          for (let i = 0; i < barcode.binary.length; i++) {
+            if (barcode.binary[i] === '1') {
+              const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+              rect.setAttribute("x", x);
+              rect.setAttribute("y", 10);
+              rect.setAttribute("width", 2);
+              rect.setAttribute("height", 60);
+              rect.setAttribute("fill", "#000");
+              group.appendChild(rect);
+            }
+            x += 2;
+          }
+          
+          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", (barcode.binary.length * 2 + 20) / 2);
+          text.setAttribute("y", 80);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-family", "Arial");
+          text.setAttribute("font-size", "14");
+          text.textContent = barcode.code;
+          group.appendChild(text);
+          
+          item.appendChild(svg);
+          container.appendChild(item);
+        } catch (error) {
+          console.error("Erro ao gerar exemplo:", error);
+        }
+      });
     }
     
     // Remove elementos do GitHub após o carregamento
@@ -296,6 +366,9 @@
       document.body.style.padding = '20px';
       document.body.style.margin = '0 auto';
       document.body.style.maxWidth = '800px';
+      
+      // Adiciona exemplos iniciais
+      adicionarExemplos();
     });
   </script>
 </body>

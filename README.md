@@ -94,7 +94,7 @@
         page-break-inside: avoid;
         break-inside: avoid;
       }
-      button, .input-area, .no-print {
+      button, .input-area, .no-print, text {
         display: none !important;
       }
     }
@@ -113,7 +113,7 @@
   
   <div class="input-area">
     <h2>Cole seus códigos (um por linha):</h2>
-    <textarea id="codigos" placeholder="Cole aqui vários códigos EAN13, um por linha&#10;Exemplo:&#10;789123456789&#10;789987654321&#10;123456789012"></textarea>
+    <textarea id="codigos" placeholder="Cole aqui vários códigos EAN13, um por linha"></textarea>
     <div>
       <button id="gerar" onclick="gerarTodos()">Gerar Códigos</button>
       <button id="limpar" onclick="limparTudo()">Limpar Tudo</button>
@@ -296,9 +296,6 @@
       document.body.style.padding = '20px';
       document.body.style.margin = '0 auto';
       document.body.style.maxWidth = '800px';
-      
-      // Exemplo inicial
-      document.getElementById("codigos").value = "789123456789\n789987654321\n123456789012";
     });
   </script>
 </body>

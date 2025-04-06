@@ -33,13 +33,15 @@
       padding: 8px 16px;
       margin: 10px 5px 10px 0;
       cursor: pointer;
-      background-color: #4CAF50;
       color: white;
       border: none;
       border-radius: 4px;
       transition: background-color 0.3s;
     }
-    button:hover {
+    #gerar {
+      background-color: #4CAF50;
+    }
+    #gerar:hover {
       background-color: #45a049;
     }
     #limpar {
@@ -53,6 +55,12 @@
     }
     #imprimir:hover {
       background-color: #0b7dda;
+    }
+    #copiar {
+      background-color: #ff9800;
+    }
+    #copiar:hover {
+      background-color: #e68a00;
     }
     .barcode-container {
       display: flex;
@@ -73,6 +81,23 @@
       border: 1px solid #eee;
       background: white;
     }
+    .barcode-number {
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 14px;
+      word-break: break-all;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .example-title {
+      font-style: italic;
+      color: #666;
+      margin-bottom: 10px;
+    }
     @media print {
       body * {
         visibility: hidden;
@@ -87,42 +112,46 @@
         width: 100%;
         background: none;
         box-shadow: none;
+        padding: 0;
       }
       .barcode-item {
         display: inline-block;
         margin: 10px;
         page-break-inside: avoid;
         break-inside: avoid;
+        box-shadow: none;
+        padding: 5px;
       }
-      button, .input-area, .no-print {
+      button, .input-area, .no-print, .example-title {
         display: none !important;
       }
-      /* Mostra os números abaixo do código de barras na impressão */
-      text {
+      .barcode-number {
         display: block !important;
+        margin-top: 5px;
+        font-size: 12px;
       }
-    }
-    /* Garante que nenhum elemento do GitHub apareça */
-    .Header, .header, .footer, .site-header, .site-footer, .repo-link, .Layout {
-      display: none !important;
-    }
-    body > .Layout {
-      padding: 0 !important;
-      margin: 0 !important;
     }
   </style>
 </head>
 <body>
   <h1>Gerador de Códigos de Barras em Lote - EAN13</h1>
   
-  <div class="input-area">
+  <div class="input-area no-print">
     <h2>Cole seus códigos (um por linha):</h2>
-    <textarea id="codigos" placeholder="Cole aqui vários códigos EAN13, um por linha"></textarea>
-    <div>
+    <textarea id="codigos" placeholder="Cole aqui vários códigos EAN13, um por linha
+Exemplo:
+7891000315507
+7891910000197
+7891234567890"></textarea>
+    
+    <div class="controls">
       <button id="gerar" onclick="gerarTodos()">Gerar Códigos</button>
       <button id="limpar" onclick="limparTudo()">Limpar Tudo</button>
+      <button id="copiar" onclick="copiarCodigos()">Copiar Códigos</button>
       <button id="imprimir" onclick="window.print()">Imprimir Códigos</button>
     </div>
+    
+    <div class="example-title">Exemplos (não são apagados ao limpar):</div>
   </div>
   
   <div class="output-area">
@@ -186,19 +215,16 @@
       return (10 - (sum % 10)) % 10;
     }
     
-    function renderBarcode(binary, container, options = {}) {
-      const width = options.width || 2;
-      const height = options.height || 60;
-      const margin = options.margin || 10;
-      const displayValue = options.displayValue !== false;
+    function renderBarcode(barcodeData, container, isExample = false) {
+      const binary = barcodeData.binary;
+      const code = barcodeData.code;
+      const width = 2;
+      const height = 60;
+      const margin = 10;
       
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("width", (binary.length * width) + (margin * 2));
-      svg.setAttribute("height", height + margin + (displayValue ? 30 : 0));
-      svg.classList.add("barcode-svg");
-      
-      const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-      svg.appendChild(group);
+      svg.setAttribute("height", height + margin);
       
       let x = margin;
       for (let i = 0; i < binary.length; i++) {
@@ -209,25 +235,25 @@
           rect.setAttribute("width", width);
           rect.setAttribute("height", height);
           rect.setAttribute("fill", "#000");
-          group.appendChild(rect);
+          svg.appendChild(rect);
         }
         x += width;
       }
       
-      if (displayValue && options.code) {
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        text.setAttribute("x", (binary.length * width + margin * 2) / 2);
-        text.setAttribute("y", height + margin + 20);
-        text.setAttribute("text-anchor", "middle");
-        text.setAttribute("font-family", "Arial");
-        text.setAttribute("font-size", "14");
-        text.textContent = options.code;
-        group.appendChild(text);
-      }
-      
       const item = document.createElement("div");
       item.className = "barcode-item";
+      if (isExample) {
+        item.classList.add("example-barcode");
+      }
+      
       item.appendChild(svg);
+      
+      // Adiciona o número abaixo do código de barras
+      const numberDiv = document.createElement("div");
+      numberDiv.className = "barcode-number";
+      numberDiv.textContent = code;
+      item.appendChild(numberDiv);
+      
       container.appendChild(item);
     }
     
@@ -235,19 +261,19 @@
       const input = document.getElementById("codigos").value.trim();
       const container = document.getElementById("barcodes");
       
-      // Limpa apenas os códigos gerados, mantendo os exemplos
-      const exampleBarcodes = container.querySelectorAll('.example-barcode');
-      container.innerHTML = '';
-      exampleBarcodes.forEach(barcode => {
-        container.appendChild(barcode);
-      });
+      // Remove apenas os códigos não-exemplo
+      const items = container.querySelectorAll('.barcode-item:not(.example-barcode)');
+      items.forEach(item => item.remove());
       
       if (!input) {
         alert("Por favor, cole alguns códigos EAN13 no campo de texto.");
         return;
       }
       
-      const codigos = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      const codigos = input.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+      
       let successCount = 0;
       let errorCount = 0;
       const errorMessages = [];
@@ -255,13 +281,7 @@
       codigos.forEach((codigo, index) => {
         try {
           const barcode = generateEAN13(codigo, true);
-          renderBarcode(barcode.binary, container, {
-            width: 2,
-            height: 60,
-            margin: 10,
-            code: barcode.code,
-            displayValue: true
-          });
+          renderBarcode(barcode, container);
           successCount++;
         } catch (error) {
           errorCount++;
@@ -285,89 +305,39 @@
       document.getElementById("codigos").value = '';
       const container = document.getElementById("barcodes");
       
-      // Remove apenas os códigos gerados, mantendo os exemplos
-      const exampleBarcodes = container.querySelectorAll('.example-barcode');
-      container.innerHTML = '';
-      exampleBarcodes.forEach(barcode => {
-        container.appendChild(barcode);
-      });
+      // Remove apenas os códigos não-exemplo
+      const items = container.querySelectorAll('.barcode-item:not(.example-barcode)');
+      items.forEach(item => item.remove());
+    }
+    
+    function copiarCodigos() {
+      const input = document.getElementById("codigos");
+      input.select();
+      document.execCommand('copy');
+      alert("Códigos copiados para a área de transferência!");
     }
     
     // Adiciona exemplos iniciais
     function adicionarExemplos() {
       const container = document.getElementById("barcodes");
       const exemplos = [
-        '7891000315507',
-        '7891910000197',
-        '7891234567890'
+        '7891000315507', // Exemplo real (Coca-Cola lata)
+        '7891910000197', // Exemplo real (Pão de Açúcar)
+        '7891234567890'  // Exemplo genérico
       ];
       
       exemplos.forEach(codigo => {
         try {
           const barcode = generateEAN13(codigo, true);
-          const item = document.createElement("div");
-          item.className = "barcode-item example-barcode";
-          
-          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-          svg.setAttribute("width", (barcode.binary.length * 2) + 20);
-          svg.setAttribute("height", 90);
-          svg.classList.add("barcode-svg");
-          
-          const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          svg.appendChild(group);
-          
-          let x = 10;
-          for (let i = 0; i < barcode.binary.length; i++) {
-            if (barcode.binary[i] === '1') {
-              const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-              rect.setAttribute("x", x);
-              rect.setAttribute("y", 10);
-              rect.setAttribute("width", 2);
-              rect.setAttribute("height", 60);
-              rect.setAttribute("fill", "#000");
-              group.appendChild(rect);
-            }
-            x += 2;
-          }
-          
-          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-          text.setAttribute("x", (barcode.binary.length * 2 + 20) / 2);
-          text.setAttribute("y", 80);
-          text.setAttribute("text-anchor", "middle");
-          text.setAttribute("font-family", "Arial");
-          text.setAttribute("font-size", "14");
-          text.textContent = barcode.code;
-          group.appendChild(text);
-          
-          item.appendChild(svg);
-          container.appendChild(item);
+          renderBarcode(barcode, container, true);
         } catch (error) {
           console.error("Erro ao gerar exemplo:", error);
         }
       });
     }
     
-    // Remove elementos do GitHub após o carregamento
+    // Inicializa a página
     document.addEventListener('DOMContentLoaded', function() {
-      // Limpa qualquer cabeçalho residual
-      const unwantedElements = [
-        '.Header', '.header', '.footer', 
-        '.site-header', '.site-footer', '.repo-link',
-        '.Layout', 'header', 'footer'
-      ];
-      
-      unwantedElements.forEach(selector => {
-        document.querySelectorAll(selector).forEach(el => {
-          el.remove();
-        });
-      });
-
-      // Corrige o estilo do body
-      document.body.style.padding = '20px';
-      document.body.style.margin = '0 auto';
-      document.body.style.maxWidth = '800px';
-      
-      // Adiciona exemplos iniciais
       adicionarExemplos();
     });
   </script>

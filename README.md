@@ -126,6 +126,7 @@
         display: none !important;
       }
       .barcode-number {
+        visibility: visible !important;
         display: block !important;
         margin-top: 5px;
         font-size: 12px;
@@ -159,6 +160,7 @@ Exemplo:
     <div id="barcodes" class="barcode-container"></div>
   </div>
 
+  <!-- JS permanece o mesmo -->
   <script>
     // Implementação do EAN13
     function generateEAN13(code, skipValidation = false) {
@@ -261,7 +263,6 @@ Exemplo:
       const input = document.getElementById("codigos").value.trim();
       const container = document.getElementById("barcodes");
       
-      // Remove apenas os códigos não-exemplo
       const items = container.querySelectorAll('.barcode-item:not(.example-barcode)');
       items.forEach(item => item.remove());
       
@@ -305,7 +306,6 @@ Exemplo:
       document.getElementById("codigos").value = '';
       const container = document.getElementById("barcodes");
       
-      // Remove apenas os códigos não-exemplo
       const items = container.querySelectorAll('.barcode-item:not(.example-barcode)');
       items.forEach(item => item.remove());
     }
@@ -317,13 +317,12 @@ Exemplo:
       alert("Códigos copiados para a área de transferência!");
     }
     
-    // Adiciona exemplos iniciais
     function adicionarExemplos() {
       const container = document.getElementById("barcodes");
       const exemplos = [
-        '7891000315507', // Exemplo real (Coca-Cola lata)
-        '7891910000197', // Exemplo real (Pão de Açúcar)
-        '7891234567890'  // Exemplo genérico
+        '7891000315507',
+        '7891910000197',
+        '7891234567890'
       ];
       
       exemplos.forEach(codigo => {
@@ -336,7 +335,6 @@ Exemplo:
       });
     }
     
-    // Inicializa a página
     document.addEventListener('DOMContentLoaded', function() {
       adicionarExemplos();
     });

@@ -81,12 +81,6 @@
       border: 1px solid #eee;
       background: white;
     }
-    .barcode-number {
-      margin-top: 10px;
-      font-family: monospace;
-      font-size: 14px;
-      word-break: break-word;
-    }
     .controls {
       display: flex;
       flex-wrap: wrap;
@@ -125,13 +119,6 @@
         break-inside: avoid;
         box-shadow: none;
         padding: 5px;
-      }
-
-      .barcode-number {
-        display: block;
-        margin-top: 5px;
-        font-size: 12px;
-        color: black !important;
       }
     }
   </style>
@@ -250,8 +237,15 @@ Exemplo:
       const numberDiv = document.createElement("div");
       numberDiv.className = "barcode-number";
       numberDiv.textContent = code;
-      item.appendChild(numberDiv);
 
+      // 🛠️ Aplicando estilos inline para garantir impressão
+      numberDiv.style.display = "block";
+      numberDiv.style.marginTop = "5px";
+      numberDiv.style.fontSize = "12px";
+      numberDiv.style.color = "black";
+      numberDiv.style.fontFamily = "monospace";
+
+      item.appendChild(numberDiv);
       container.appendChild(item);
     }
 

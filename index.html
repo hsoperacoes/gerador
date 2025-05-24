@@ -1,3 +1,5 @@
+esse cod esta mt na cara que foi feito por IA, faz ele parecer que foi feito por um humano por favor
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -48,8 +50,6 @@
     #limpar:hover { background-color: #d32f2f; }
     #imprimir { background-color: #2196F3; }
     #imprimir:hover { background-color: #0b7dda; }
-    #copiar { background-color: #ff9800; }
-    #copiar:hover { background-color: #e68a00; }
 
     .barcode-container {
       display: flex;
@@ -149,7 +149,6 @@ Exemplo:
     <div class="controls">
       <button id="gerar" onclick="gerarTodos()">Gerar Códigos</button>
       <button id="limpar" onclick="limparTudo()">Limpar Tudo</button>
-      <button id="copiar" onclick="copiarCodigos()">Copiar Códigos</button>
       <button id="imprimir" onclick="window.print()">Imprimir Códigos</button>
     </div>
 
@@ -300,13 +299,6 @@ Exemplo:
     function limparTudo() {
       document.getElementById("codigos").value = '';
       document.getElementById("barcodes").innerHTML = '';
-    }
-
-    function copiarCodigos() {
-      const input = document.getElementById("codigos");
-      input.select();
-      document.execCommand('copy');
-      alert("Códigos copiados para a área de transferência!");
     }
   </script>
 </body>

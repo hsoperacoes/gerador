@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gerador de Códigos de Barras em Lote - EAN13</title>
   <style>
     body {
@@ -12,6 +12,7 @@
       margin: 0 auto;
       background-color: #f5f5f5;
     }
+
     .input-area, .output-area {
       margin-bottom: 20px;
       background: white;
@@ -19,6 +20,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+
     textarea {
       width: 100%;
       height: 150px;
@@ -28,6 +30,7 @@
       border-radius: 4px;
       resize: vertical;
     }
+
     button {
       font-size: 16px;
       padding: 8px 16px;
@@ -38,36 +41,23 @@
       border-radius: 4px;
       transition: background-color 0.3s;
     }
-    #gerar {
-      background-color: #4CAF50;
-    }
-    #gerar:hover {
-      background-color: #45a049;
-    }
-    #limpar {
-      background-color: #f44336;
-    }
-    #limpar:hover {
-      background-color: #d32f2f;
-    }
-    #imprimir {
-      background-color: #2196F3;
-    }
-    #imprimir:hover {
-      background-color: #0b7dda;
-    }
-    #copiar {
-      background-color: #ff9800;
-    }
-    #copiar:hover {
-      background-color: #e68a00;
-    }
+
+    #gerar { background-color: #4CAF50; }
+    #gerar:hover { background-color: #45a049; }
+    #limpar { background-color: #f44336; }
+    #limpar:hover { background-color: #d32f2f; }
+    #imprimir { background-color: #2196F3; }
+    #imprimir:hover { background-color: #0b7dda; }
+    #copiar { background-color: #ff9800; }
+    #copiar:hover { background-color: #e68a00; }
+
     .barcode-container {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
       margin-top: 20px;
     }
+
     .barcode-item {
       text-align: center;
       margin-bottom: 20px;
@@ -77,16 +67,18 @@
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+
     svg {
-      border: 1px solid #eee;
       background: white;
     }
+
     .controls {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 10px;
     }
+
     .example-title {
       font-style: italic;
       color: #666;
@@ -156,7 +148,7 @@ Exemplo:
       }
 
       if (code.length === 12) {
-        code = code + calculateChecksum(code);
+        code += calculateChecksum(code);
       } else if (!skipValidation && calculateChecksum(code.substring(0, 12)) != code[12]) {
         throw new Error(`Dígito verificador inválido para código: "${code}"`);
       }
@@ -168,23 +160,20 @@ Exemplo:
       };
 
       const structure = ["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"];
-
       const firstDigit = parseInt(code[0]);
       const pattern = structure[firstDigit];
 
       let barcode = "101";
-
       for (let i = 1; i <= 6; i++) {
         const digit = parseInt(code[i]);
-        const patternType = pattern[i-1];
-        barcode += patterns[patternType][digit];
+        barcode += patterns[pattern[i - 1]][digit];
       }
 
       barcode += "01010";
 
       for (let i = 7; i <= 12; i++) {
         const digit = parseInt(code[i]);
-        barcode += patterns["R"][digit];
+        barcode += patterns.R[digit];
       }
 
       barcode += "101";
@@ -204,16 +193,20 @@ Exemplo:
       return (10 - (sum % 10)) % 10;
     }
 
-    function renderBarcode(barcodeData, container, isExample = false) {
+    function renderBarcode(barcodeData, container) {
       const binary = barcodeData.binary;
       const code = barcodeData.code;
       const width = 2;
       const height = 60;
       const margin = 10;
+      const fontSize = 14;
 
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("width", (binary.length * width) + (margin * 2));
-      svg.setAttribute("height", height + margin);
+      const totalWidth = (binary.length * width) + (margin * 2);
+      const totalHeight = height + fontSize + 15;
+
+      svg.setAttribute("width", totalWidth);
+      svg.setAttribute("height", totalHeight);
 
       let x = margin;
       for (let i = 0; i < binary.length; i++) {
@@ -229,32 +222,25 @@ Exemplo:
         x += width;
       }
 
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", totalWidth / 2);
+      text.setAttribute("y", totalHeight - 5);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("font-size", fontSize);
+      text.setAttribute("font-family", "monospace");
+      text.textContent = code;
+      svg.appendChild(text);
+
       const item = document.createElement("div");
       item.className = "barcode-item";
-      if (isExample) item.classList.add("example-barcode");
       item.appendChild(svg);
-
-      const numberDiv = document.createElement("div");
-      numberDiv.className = "barcode-number";
-      numberDiv.textContent = code;
-
-      // 🛠️ Aplicando estilos inline para garantir impressão
-      numberDiv.style.display = "block";
-      numberDiv.style.marginTop = "5px";
-      numberDiv.style.fontSize = "12px";
-      numberDiv.style.color = "black";
-      numberDiv.style.fontFamily = "monospace";
-
-      item.appendChild(numberDiv);
       container.appendChild(item);
     }
 
     function gerarTodos() {
       const input = document.getElementById("codigos").value.trim();
       const container = document.getElementById("barcodes");
-
-      const items = container.querySelectorAll('.barcode-item:not(.example-barcode)');
-      items.forEach(item => item.remove());
+      container.innerHTML = '';
 
       if (!input) {
         alert("Por favor, cole alguns códigos EAN13 no campo de texto.");
@@ -262,7 +248,6 @@ Exemplo:
       }
 
       const codigos = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-
       let successCount = 0;
       let errorCount = 0;
       const errorMessages = [];
@@ -292,9 +277,7 @@ Exemplo:
 
     function limparTudo() {
       document.getElementById("codigos").value = '';
-      const container = document.getElementById("barcodes");
-      const items = container.querySelectorAll('.barcode-item:not(.example-barcode)');
-      items.forEach(item => item.remove());
+      document.getElementById("barcodes").innerHTML = '';
     }
 
     function copiarCodigos() {
@@ -303,23 +286,6 @@ Exemplo:
       document.execCommand('copy');
       alert("Códigos copiados para a área de transferência!");
     }
-
-    function adicionarExemplos() {
-      const container = document.getElementById("barcodes");
-      const exemplos = ['7891000315507', '7891910000197', '7891234567890'];
-      exemplos.forEach(codigo => {
-        try {
-          const barcode = generateEAN13(codigo, true);
-          renderBarcode(barcode, container, true);
-        } catch (error) {
-          console.error("Erro ao gerar exemplo:", error);
-        }
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      adicionarExemplos();
-    });
   </script>
 </body>
 </html>

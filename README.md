@@ -85,7 +85,7 @@
       margin-top: 10px;
       font-family: monospace;
       font-size: 14px;
-      word-break: break-all;
+      word-break: break-word;
     }
     .controls {
       display: flex;
@@ -98,28 +98,26 @@
       color: #666;
       margin-bottom: 10px;
     }
+
     @media print {
-      body * {
-        visibility: hidden;
+      .input-area,
+      .no-print,
+      button,
+      .controls,
+      .example-title {
+        display: none !important;
       }
-      .output-area, .output-area * {
-        visibility: visible;
-      }
-      .barcode-number {
-        visibility: visible !important;
-        display: block !important;
-        margin-top: 5px;
-        font-size: 12px;
-      }
+
       .output-area {
         position: absolute;
-        left: 0;
         top: 0;
+        left: 0;
         width: 100%;
         background: none;
         box-shadow: none;
         padding: 0;
       }
+
       .barcode-item {
         display: inline-block;
         margin: 10px;
@@ -128,8 +126,12 @@
         box-shadow: none;
         padding: 5px;
       }
-      button, .input-area, .no-print, .example-title {
-        display: none !important;
+
+      .barcode-number {
+        display: block;
+        margin-top: 5px;
+        font-size: 12px;
+        color: black !important;
       }
     }
   </style>

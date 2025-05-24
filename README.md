@@ -86,6 +86,12 @@
     }
 
     @media print {
+      body {
+        background: none;
+        padding: 0;
+        margin: 0;
+      }
+      
       .input-area,
       .no-print,
       button,
@@ -95,8 +101,7 @@
       }
 
       .output-area {
-        position: static;
-        width: auto;
+        width: 100%;
         background: none;
         box-shadow: none;
         padding: 0;
@@ -105,23 +110,27 @@
 
       .barcode-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 10px;
         margin: 0;
       }
 
       .barcode-item {
-        display: inline-block;
-        margin: 5px;
-        page-break-inside: avoid;
-        break-inside: avoid;
-        box-shadow: none;
+        margin: 0;
         padding: 5px;
+        box-shadow: none;
         background: none;
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
 
       svg {
         background: none;
+      }
+
+      svg text {
+        fill: black !important;
+        font-size: 14px !important;
       }
     }
   </style>
@@ -218,6 +227,7 @@ Exemplo:
 
       svg.setAttribute("width", totalWidth);
       svg.setAttribute("height", totalHeight);
+      svg.setAttribute("class", "barcode-svg");
 
       let x = margin;
       for (let i = 0; i < binary.length; i++) {
@@ -239,6 +249,7 @@ Exemplo:
       text.setAttribute("text-anchor", "middle");
       text.setAttribute("font-size", fontSize);
       text.setAttribute("font-family", "monospace");
+      text.setAttribute("fill", "black");
       text.textContent = code;
       svg.appendChild(text);
 

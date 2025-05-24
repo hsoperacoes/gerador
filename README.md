@@ -95,28 +95,39 @@
       }
 
       .output-area {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
+        position: static;
+        width: auto;
         background: none;
         box-shadow: none;
         padding: 0;
+        margin: 0;
+      }
+
+      .barcode-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        margin: 0;
       }
 
       .barcode-item {
         display: inline-block;
-        margin: 10px;
+        margin: 5px;
         page-break-inside: avoid;
         break-inside: avoid;
         box-shadow: none;
         padding: 5px;
+        background: none;
+      }
+
+      svg {
+        background: none;
       }
     }
   </style>
 </head>
 <body>
-  <h1>Gerador de Códigos de Barras em Lote - EAN13</h1>
+  <h1 class="no-print">Gerador de Códigos de Barras em Lote - EAN13</h1>
 
   <div class="input-area no-print">
     <h2>Cole seus códigos (um por linha):</h2>

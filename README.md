@@ -105,6 +105,12 @@
       .output-area, .output-area * {
         visibility: visible;
       }
+      .barcode-number {
+        visibility: visible !important;
+        display: block !important;
+        margin-top: 5px;
+        font-size: 12px;
+      }
       .output-area {
         position: absolute;
         left: 0;
@@ -125,18 +131,12 @@
       button, .input-area, .no-print, .example-title {
         display: none !important;
       }
-      .barcode-number {
-        visibility: visible !important;
-        display: block !important;
-        margin-top: 5px;
-        font-size: 12px;
-      }
     }
   </style>
 </head>
 <body>
   <h1>Gerador de Códigos de Barras em Lote - EAN13</h1>
-  
+
   <div class="input-area no-print">
     <h2>Cole seus códigos (um por linha):</h2>
     <textarea id="codigos" placeholder="Cole aqui vários códigos EAN13, um por linha
@@ -144,70 +144,68 @@ Exemplo:
 7891000315507
 7891910000197
 7891234567890"></textarea>
-    
+
     <div class="controls">
       <button id="gerar" onclick="gerarTodos()">Gerar Códigos</button>
       <button id="limpar" onclick="limparTudo()">Limpar Tudo</button>
       <button id="copiar" onclick="copiarCodigos()">Copiar Códigos</button>
       <button id="imprimir" onclick="window.print()">Imprimir Códigos</button>
     </div>
-    
+
     <div class="example-title">Exemplos (não são apagados ao limpar):</div>
   </div>
-  
+
   <div class="output-area">
     <h2 class="no-print">Códigos Gerados:</h2>
     <div id="barcodes" class="barcode-container"></div>
   </div>
 
-  <!-- JS permanece o mesmo -->
   <script>
-    // Implementação do EAN13
     function generateEAN13(code, skipValidation = false) {
       if (!/^\d{12,13}$/.test(code)) {
         throw new Error(`Código inválido: "${code}" - Deve conter 12 ou 13 dígitos`);
       }
-      
+
       if (code.length === 12) {
         code = code + calculateChecksum(code);
       } else if (!skipValidation && calculateChecksum(code.substring(0, 12)) != code[12]) {
         throw new Error(`Dígito verificador inválido para código: "${code}"`);
       }
-      
+
       const patterns = {
         L: ["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"],
         G: ["0100111","0110011","0011011","0100001","0011101","0111001","0000101","0010001","0001001","0010111"],
         R: ["1110010","1100110","1101100","1000010","1011100","1001110","1010000","1000100","1001000","1110100"]
       };
-      
+
       const structure = ["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"];
-      
+
       const firstDigit = parseInt(code[0]);
       const pattern = structure[firstDigit];
-      
+
       let barcode = "101";
-      
+
       for (let i = 1; i <= 6; i++) {
         const digit = parseInt(code[i]);
         const patternType = pattern[i-1];
         barcode += patterns[patternType][digit];
       }
-      
+
       barcode += "01010";
-      
+
       for (let i = 7; i <= 12; i++) {
         const digit = parseInt(code[i]);
         barcode += patterns["R"][digit];
       }
-      
+
       barcode += "101";
-      
+
       return {
         code: code,
         binary: barcode
       };
     }
-    
+
     function calculateChecksum(code) {
       let sum = 0;
       for (let i = 0; i < 12; i++) {
@@ -216,18 +214,18 @@ Exemplo:
       }
       return (10 - (sum % 10)) % 10;
     }
-    
+
     function renderBarcode(barcodeData, container, isExample = false) {
       const binary = barcodeData.binary;
       const code = barcodeData.code;
       const width = 2;
       const height = 60;
       const margin = 10;
-      
+
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("width", (binary.length * width) + (margin * 2));
       svg.setAttribute("height", height + margin);
-      
+
       let x = margin;
       for (let i = 0; i < binary.length; i++) {
         if (binary[i] === '1') {
@@ -241,44 +239,38 @@ Exemplo:
         }
         x += width;
       }
-      
+
       const item = document.createElement("div");
       item.className = "barcode-item";
-      if (isExample) {
-        item.classList.add("example-barcode");
-      }
-      
+      if (isExample) item.classList.add("example-barcode");
       item.appendChild(svg);
-      
-      // Adiciona o número abaixo do código de barras
+
       const numberDiv = document.createElement("div");
       numberDiv.className = "barcode-number";
       numberDiv.textContent = code;
       item.appendChild(numberDiv);
-      
+
       container.appendChild(item);
     }
-    
+
     function gerarTodos() {
       const input = document.getElementById("codigos").value.trim();
       const container = document.getElementById("barcodes");
-      
+
       const items = container.querySelectorAll('.barcode-item:not(.example-barcode)');
       items.forEach(item => item.remove());
-      
+
       if (!input) {
         alert("Por favor, cole alguns códigos EAN13 no campo de texto.");
         return;
       }
-      
-      const codigos = input.split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0);
-      
+
+      const codigos = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
       let successCount = 0;
       let errorCount = 0;
       const errorMessages = [];
-      
+
       codigos.forEach((codigo, index) => {
         try {
           const barcode = generateEAN13(codigo, true);
@@ -294,37 +286,31 @@ Exemplo:
           container.appendChild(errorDiv);
         }
       });
-      
+
       if (errorCount > 0) {
         alert(`Foram gerados ${successCount} códigos com sucesso.\n\nErros encontrados (${errorCount}):\n${errorMessages.join('\n')}`);
       } else if (successCount > 0) {
         alert(`Todos os ${successCount} códigos foram gerados com sucesso!`);
       }
     }
-    
+
     function limparTudo() {
       document.getElementById("codigos").value = '';
       const container = document.getElementById("barcodes");
-      
       const items = container.querySelectorAll('.barcode-item:not(.example-barcode)');
       items.forEach(item => item.remove());
     }
-    
+
     function copiarCodigos() {
       const input = document.getElementById("codigos");
       input.select();
       document.execCommand('copy');
       alert("Códigos copiados para a área de transferência!");
     }
-    
+
     function adicionarExemplos() {
       const container = document.getElementById("barcodes");
-      const exemplos = [
-        '7891000315507',
-        '7891910000197',
-        '7891234567890'
-      ];
-      
+      const exemplos = ['7891000315507', '7891910000197', '7891234567890'];
       exemplos.forEach(codigo => {
         try {
           const barcode = generateEAN13(codigo, true);
@@ -334,7 +320,7 @@ Exemplo:
         }
       });
     }
-    
+
     document.addEventListener('DOMContentLoaded', function() {
       adicionarExemplos();
     });
